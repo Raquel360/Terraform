@@ -1,0 +1,59 @@
+resource "azurerm_network_interface" "nic-infraestrutura-devops" {
+  name                = "nic-infraestrutura"
+  location            = azurerm_resource_group.infraestrutura.location
+  resource_group_name = azurerm_resource_group.infraestrutura.name
+
+  ip_configuration {
+    name                          = "Teste"
+    subnet_id                     = azurerm_subnet.sub-infraestrutura.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.ip-infraestrutura.id
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "nisga-infraestrutura" {
+  network_interface_id      = azurerm_network_interface.nic-infraestrutura.id
+  network_security_group_id = azurerm_network_security_group.nsg-infraestrutura.id
+}
+
+resource "azurerm_linux_virtual_machine" "vm-infraestrutura" {
+  name                = "vm-infraestrutura"
+  resource_group_name = azurerm_resource_group.infraestrutura.name
+  location            = azurerm_resource_group.infraestrutura.location
+  size                = "Teste_F2"
+  disable_password_authentication = false
+  admin_username      = "adminuser"
+  admin_password      = "Teste@123" 
+  network_interface_ids = [
+    azurerm_network_interface.nic-infraestrutura.id,
+  ]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+}
+
+resource "null_resource" "script"{
+
+    provisioner "remote-exec" {
+        connection{
+            type = "ssh"
+            user = "adminuser"
+            password = "Teste@123"
+            host = azurerm_public_ip.ip-infraestrutura.ip_address
+        }
+
+        inline = [
+            "sudo apt-get update",
+            "sudo apt-get install -y mysql-server"
+        ]
+    }
+}

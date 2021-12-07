@@ -1,0 +1,4 @@
+.terraform.locj.hc2
+.terraform.tfstate
+.terraform.tfstate.backup
+.terraform/providers.registry.terraform.io/hashicorp/azurerm/2.88.1/windows_amd64/terraform-provider-azurerm_v2.88.1_x5.exe
